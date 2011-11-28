@@ -1,0 +1,113 @@
+#!/usr/bin/perl -w
+#lp8@sanger.ac.uk
+
+use strict;
+use camExecute;
+
+my $i;
+my $j;
+my $k;
+my $last=0;
+my @split;
+
+#open (LIST, "<$ARGV[0]");
+#my @lines= <LIST>;
+#chomp @lines;
+my $chr=$ARGV[0];
+
+#open (MARKERS, ">22markers.txt");
+my $log;
+my $out;
+my $inp;
+my $known;
+my $ped;
+my $map;
+my $bgl;
+my $pedtrios;
+my $maptrios;
+my $bgltrios;
+my $markers;
+my $phased;
+my $unphased;
+my $outbeagle;
+my $logbeagle;
+my $tosubst;
+my $substed;
+my $tprefix;
+my $tlog;
+for $k ($chr .. $ARGV[1]){
+    if ($ARGV[2] eq "AFRO"){
+	$log=$k."/afro".$k.".farmput";
+	$tlog="afro".$k.".farmput";
+	$out=$k."/AFRO_phase".$k;
+	$inp=$k."/AFRICAN_chr".$k.".recode.phase.inp";
+	$known=$k."/YRItrios_chr".$k."_knownHaplotypes.txt";
+	$ped=$k."/AFRO_chr".$k.".ped";
+	$map=$k."/AFRO_chr".$k.".map";
+	$bgl=$k."/AFRO_chr".$k.".bgl";
+	$pedtrios=$k."/AFROtrios_chr".$k.".ped";
+	$maptrios=$k."/AFROtrios_chr".$k.".map";
+	$bgltrios=$k."/AFROtrios_chr".$k.".bgl";
+	$markers=$k."/markers_chr".$k.".txt";
+	$phased= $k."/YRItrios_chr".$k.".bgl";
+	$unphased=$k."/AFRICAN_chr".$k.".bgl";
+	$outbeagle=$k."/phasedAFRO_chr".$k.".bgl";
+	$logbeagle= $k."/beagleafro".$k.".farmput";
+	$tosubst=$k."/AFRO_phase".$k."_hapguess_switch.out.ped";
+	$substed=$k."/temp.txt";
+	$tprefix=$k."/phasedAFRO_chr".$k.".bgl.AFRICAN_chr".$k.".bgl.phased.gz";
+    }
+    if ($ARGV[2] eq "OOA"){
+	$log=$k."/ooa".$k.".farmput";
+	$tlog="ooa".$k.".farmput";
+	$out=$k."/OOA_phase".$k;
+	$inp=$k."/OOA_chr".$k.".recode.phase.inp";
+	$known=$k."/CEUtrios_chr".$k."_knownHaplotypes.txt";
+	$ped=$k."/OOA_chr".$k.".ped";
+	$map=$k."/OOA_chr".$k.".map";
+	$bgl=$k."/OOA_chr".$k.".bgl";
+	$pedtrios=$k."/OOAtrios_chr".$k.".ped";
+	$maptrios=$k."/OOAtrios_chr".$k.".map";
+	$bgltrios=$k."/OOAtrios_chr".$k.".bgl";
+	$markers=$k."/markers_chr".$k.".txt";
+	$phased= $k."/CEUtrios_chr".$k.".bgl";
+	$unphased=$k."/OOA_chr".$k.".bgl";
+	$outbeagle=$k."/phasedOOA_chr".$k.".bgl";
+	$logbeagle= $k."/beagleooa".$k.".farmput";
+	$tprefix=$k."/phasedOOA_chr".$k.".bgl.OOA_chr".$k.".bgl.phased.gz";
+    }
+    #system "bsub -P team19 -o $tlog 'plink --tfile $tprefix --keep-allele-order --recode --tab --noweb --out $tprefix'"#transpose tped into bed
+    if ($ARGV[3] eq "Ped2Beagle"){
+	system "ped_to_bgl $ped $map > $bgl"; #get ped into beagle format
+	system "ped_to_bgl $pedtrios $maptrios > $bgltrios"; #get ped into beagle format
+    }
+    if ($ARGV[3] eq "Beagle"){
+        my %camConf = camLocalInit(6);
+	#system "bsub -P team19 -o $logbeagle -q long -M5000000 -R'select[mem>5000] rusage[mem=5000]' 'java -Xmx5000m -jar beagle.jar lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle'"; #run beagle
+	#system "beagle lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle"; #run beagle
+        $camConf{"out"}="/dev/null";
+	camLocalSubmit(\%camConf, "beagle lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle"); #run beagle
+
+    }
+#system "sed -e 's/1 1/2 2/g' $tosubst > $substed";#subst 1 1 with 2 2 and 0 0 with 1 1 in ped files
+    #system "sed -e 's/0 0/1 1/g' $substed > $tosubst";
+    #system "bsub -P team19 -o $log -q basement './fastPHASE_Linux -K15 -s10 -o$out  -u./STUFF_for_fastPHASE/AFRO_pop_labels.txt -b$known $inp'"; #run fastphase
+    #system "bsub -P team19 'plink --bfile $ARGV[2] --keep-allele-order --make-bed --noweb --chr $k --out $k/test'"; #make bed
+    if ($ARGV[3] eq "Markers"){
+	system "cut -f 2,4,5,6 $k/tomarkers.bim > $k/markers_chr$k.txt"; #get testbim files into beagle markers file
+	system "rm $k/tomarkers.*";
+    }
+    #system "rm $k/test*"; #remove test bfiles 
+    #system "mkdir $k";
+    #system "cd $k/";
+    #my $file= $k."/shared_snps.txt";
+    #open( INFILE, "<$file" ) or die "Couldn't open $file: $!\n";
+    #my @sharelines= <INFILE>;
+    #my @splitshare= split(/\s+/, $sharelines[0]);
+    #my $pos= ($splitshare[0] - 1);
+    #my $rs= system "sort -k $k/AGEW_chr$k_hwe_cleaned.ToFst | -head -$splitshare[0] | tail -1";
+    #print MARKERS "$splitshare[1]\t$rs";
+    #close (INFILE);
+}
+#close (MARKERS);
+print STDERR "finished\n";

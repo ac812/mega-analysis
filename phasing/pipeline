@@ -1,0 +1,206 @@
+#!/usr/local/bin/perl -w
+
+use strict;
+
+my $i;
+my $j;
+my $phased;
+my $prefix;
+my $map;
+my $ped;
+
+my $scriptDir="/data6/tr353/usr/pipeline";
+
+my $error=<<END;
+Syntax is:
+pipeline <COMMAND> <list of inds> <phasedHapmapPREFIX> <unphasedGenotypesPREFIX> <chromosomeStart> <chromosomeEnd> <AFRO or OOA> <list of phased ped/map>
+END
+
+my $list=<<END;
+ref2plink
+OverlapSnps
+CheckStrand
+IF NO ERROR MESSAGE FROM PREVIOUS COMMAND HAS OCCURRED...
+MergeUnphased
+SplitUnphased
+Ped2Beagle
+Markers
+Beagle
+MergePhased
+SplitPhased
+MakeIHS
+iHS
+XPEHH
+END
+
+if ($#ARGV==-1 or $ARGV[0] eq "--help"){
+    print STDERR "$error\nCOMMANDS are:\n$list";
+    exit(-1);
+}
+
+#starting point: unphased genotype in plink format, a list of sample IDs with AFRO/OOA labels (if needed) and "refHAPLO", a set of hapmap3 haplotypes, beagle.jar in your folder, iHS.exe and XP-EHH in your folder; a list of reference haplotypes map and ped from chr 2-22"
+
+#options will be:
+#ref2plink to make reference haplotypes into cheated plink format
+
+# MANUALLY CHECK THE OVERLAP AND STRAND CONSISTENCIES BETWEEN HAPLOTYPES AND UNPHASED DATA and OVERLAP.
+
+#MergeUnphased to merge unphased and phased data in Plink format;
+#SplitUnphased to split phased and unphased data into each chromosome folder;
+#checkstrand to try and fix strand problems between datasets. However this might still need manual manipulation if snp positions are not the same...
+#Ped2Beagle to make each splitted file into beagle format;
+#Markers to make markers file per each file;
+#Beagle to run beagle on each chromosome;
+#Beagle2Plink to convert Beagle output back to cheated plink;
+#further info on how to do iHS and XP-EHH...
+
+
+
+
+my $command= $ARGV[0];
+my $newGeno= $ARGV[3]."overlap";
+
+
+
+if ($command eq "ref2plink"){
+
+#make list of reference peds and maps to merge
+    open (OUT, ">referencelist.txt");
+    for $i ($ARGV[4]+1 .. $ARGV[5]){ #XXX why +1???
+	if ($ARGV[6] eq "AFRO"){
+	    $map=$ARGV[2].$i."_yri.phased.map";
+	    $ped=$ARGV[2].$i."_yri.phased.ped";
+	}
+	if ($ARGV[6] eq "OOA"){
+	    $map=$ARGV[2].$i."_ceu.phased.map";
+	    $ped=$ARGV[2].$i."_ceu.phased.ped";
+	}
+	print OUT "$ped\t$map\n";
+    }
+    close (OUT);
+    
+    for $i ($ARGV[4] .. $ARGV[5]){
+        if ($ARGV[6] eq "AFRO"){
+            $phased= $ARGV[2].$i."_yri.phased";
+            $prefix= $ARGV[2].$ARGV[4]."_yri.phased";
+        }
+        if ($ARGV[6] eq "OOA"){
+            $phased= $ARGV[2].$i."_ceu.phased";
+            $prefix= $ARGV[2].$ARGV[4]."_ceu.phased";
+        }
+	
+        system "perl $scriptDir/make_cheated_plink.pl $phased hapmap_phased $i";
+    }
+
+    system "plink --file $prefix --merge-list referencelist.txt --make-bed --noweb --out REF"; 
+}
+
+elsif ($command eq "OverlapSnps"){
+    $map=$ARGV[3].".bim";
+
+    system "perl $scriptDir/best_overlap.pl REF.bim $map";
+}
+elsif ( $command eq "CheckStrand"){
+
+    open ( PH, "<REFoverlap.bim");
+    open (UNPH, "<GENOoverlap.bim");
+    my @plines= <PH>;
+    my @ulines= <UNPH>;
+    open (FLIP, ">toflip.txt");
+    open (KILL, ">noinfo.txt");
+    my $check=0;
+    my @psplit;
+    my $trick=0;
+    for $i (0 .. $#plines){
+	$trick=$i;
+        @psplit= split (/\s+/, $plines[$i]);
+        my @usplit= split (/\s+/, $ulines[$i]);
+        if ($psplit[1] eq $usplit[1]){
+            if ( $psplit[4] eq "0" and $psplit[5] eq "0" and $usplit[4] eq "0" and $usplit[5] eq "0"){
+                print KILL "$usplit[1]\n";
+                next;
+            }
+            if ($usplit[5] ne $psplit[4] and $usplit[5] ne $psplit[5]){
+                if ($psplit[4] ne "0"){
+                    print FLIP "$usplit[1]\n";
+                    next;
+                }
+                else {
+                    print KILL "$usplit[1]\n";
+                    next;
+                }
+            }
+        }
+        else {
+            print STDERR "$psplit[1]\t$usplit[1]\t there is a problem in snp positions!!!\n\n";
+            $check=1;
+
+        }
+    }
+
+    close (FLIP);
+    close (KILL);
+    close (PH);
+    close (UNPH);
+    if ($check==0 and $trick == $#plines){
+        system "plink --bfile REFoverlap --exclude noinfo.txt --make-bed --out REFtomerge --noweb";
+        system "plink --bfile GENOoverlap --exclude noinfo.txt --flip toflip.txt --make-bed --out GENOtomerge --noweb";
+    }
+}
+
+elsif ($command eq "MergeUnphased"){
+    #$map=$ARGV[3]."tomerge.bim";
+    #$ped= $newGeno."tomerge.bed";
+    #my $fam= $newGeno."tomerge.fam";
+    system "plink --bfile REFtomerge --bmerge GENOtomerge.bed GENOtomerge.bim GENOtomerge.fam --make-bed --noweb --out GLOBAL";
+}
+
+elsif ($command eq "SplitUnphased"){
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GLOBAL $ARGV[4] $ARGV[5] 2";
+}
+
+elsif ($command eq "Ped2Beagle"){
+    system "perl $scriptDir/do_something_CHRwise.pl $ARGV[4] $ARGV[5] $ARGV[6] $command";
+}
+
+elsif ($command eq "Markers"){
+    system "perl $scriptDir/do_something_CHRwise.pl $ARGV[4] $ARGV[5] $ARGV[6] $command";
+}
+
+elsif ($command eq "Beagle"){
+    system "python $scriptDir/doBeagle.py $ARGV[4] $ARGV[5] $ARGV[6]";
+}
+
+elsif ($command eq "MergePhased"){
+    system "perl $scriptDir/bglOUT_to_fakePLINK_tped.pl $ARGV[4] $ARGV[5] $ARGV[6]";
+    print STDERR "\n\n\nBEFORE CONTINUING, MAKE SURE THE IND_LIST ONLY CONTAINS THE POPULATIONS YOU WANT TO PROCESS IN THE DOWNSTREAM TESTS!\n";
+}
+
+# here you need to find the list with overlapping cM and Ancestral and extract only those snps from the plink file! AND to split the mapping file into chr..
+
+elsif ($command eq "SplitPhased"){ #the pops file should now include onyl those populations for which iHS and XPEHH should be performed
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GENO_PHASED $ARGV[4] $ARGV[5] 3";
+}
+
+elsif ($command eq "MakeIHS"){ # pops_downstream.txt is automatically created by the previous step.
+    system "perl $scriptDir/make_XPEHH.pl pops_downstream.txt $ARGV[4] $ARGV[5]";
+}
+
+elsif ($command eq "iHS"){ 
+    system "perl $scriptDir/run_iHS_XPEHH.pl iHS genetic_and_alleles.txt  pops_downstream.txt $ARGV[4] $ARGV[5]";
+}
+
+elsif ($command eq "XPEHH"){ #please provide the file with all the pairs of populations to be XP-EHHed as last entry of commandline
+    if ($#ARGV < 7){
+	print STDERR "please provide the file with all the pairs of populations to be tested in the last entry of commandline\n";
+	die;
+    }
+    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt pops_downstream.txt $ARGV[4] $ARGV[5] $ARGV[7]";
+}
+
+else {
+    print STDERR "ERROR: Command $command is not known!";
+    die;
+}
+
+print STDERR "Finished with $command!\n";
