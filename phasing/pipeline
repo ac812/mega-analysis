@@ -51,7 +51,15 @@ my $lcfg = Config::IniFiles->new( -file => $localcfg );
 my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
 my $phasePop = $lcfg->val( 'Data', 'phasePop' );
 my $allInds = $lcfg->val( 'Data', 'allInds' );
+my $chroStart = $lcfg->val( 'Data', 'chroStart' );
+my $chroEnd = $lcfg->val( 'Data', 'chroEnd' );
 
+if ($phasePop=="CEU") {
+    $phaseId = "OOA";
+}
+else {
+    $phaseId = "AFRO";
+}
 
 #starting point: unphased genotype in plink format, a list of sample IDs with AFRO/OOA labels (if needed) and "refHAPLO", a set of hapmap3 haplotypes, beagle.jar in your folder, iHS.exe and XP-EHH in your folder; a list of reference haplotypes map and ped from chr 2-22"
 
@@ -92,8 +100,8 @@ elsif ( $command eq "CheckStrand"){
     open (UNPH, "<OverlapSnps/GENOoverlap.bim");
     my @plines= <PH>;
     my @ulines= <UNPH>;
-    open (FLIP, ">toflip.txt");
-    open (KILL, ">noinfo.txt");
+    open (FLIP, ">CheckStrand/toflip.txt");
+    open (KILL, ">CheckStrand/noinfo.txt");
     my $check=0;
     my @psplit;
     my $trick=0;
@@ -129,53 +137,50 @@ elsif ( $command eq "CheckStrand"){
     close (PH);
     close (UNPH);
     if ($check==0 and $trick == $#plines){
-        system "plink --bfile OverlapSnps/REFoverlap --exclude noinfo.txt --make-bed --out CheckStrand/REFtomerge --noweb";
-        system "plink --bfile OverlapSnps/GENOoverlap --exclude noinfo.txt --flip toflip.txt --make-bed --out CheckStrand/GENOtomerge --noweb";
+        system "plink --bfile OverlapSnps/REFoverlap --exclude CheckStrand/noinfo.txt --make-bed --out CheckStrand/REFtomerge --noweb";
+        system "plink --bfile OverlapSnps/GENOoverlap --exclude noinfo.txt --flip CheckStrand/toflip.txt --make-bed --out CheckStrand/GENOtomerge --noweb";
     }
 }
 
 elsif ($command eq "MergeUnphased"){
     mkdir "MergeUnphased";
-    #$map=$ARGV[3]."tomerge.bim";
-    #$ped= $newGeno."tomerge.bed";
-    #my $fam= $newGeno."tomerge.fam";
     system "plink --bfile CheckStrand/REFtomerge --bmerge CheckStrand/GENOtomerge.bed CheckStrand/GENOtomerge.bim CheckStrand/GENOtomerge.fam --make-bed --noweb --out MergeUnphased/GLOBAL";
 }
 
 elsif ($command eq "SplitUnphased"){
     mkdir "SplitUnphased";
-    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GLOBAL $ARGV[4] $ARGV[5] 2";
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $allInds MergeUnphased/GLOBAL $chroStart $chroEnd 2 $command";
 }
 
 elsif ($command eq "Ped2Beagle"){
-    system "perl $scriptDir/do_something_CHRwise.pl $ARGV[4] $ARGV[5] $ARGV[6] $command";
+    system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
 }
 
 elsif ($command eq "Markers"){
-    system "perl $scriptDir/do_something_CHRwise.pl $ARGV[4] $ARGV[5] $ARGV[6] $command";
+    system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
 }
 
 elsif ($command eq "Beagle"){
-    system "python $scriptDir/doBeagle.py $ARGV[4] $ARGV[5] $ARGV[6]";
+    system "python $scriptDir/doBeagle.py $chroStart $chroEnd $phaseId";
 }
 
 elsif ($command eq "MergePhased"){
-    system "perl $scriptDir/bglOUT_to_fakePLINK_tped.pl $ARGV[4] $ARGV[5] $ARGV[6]";
+    system "perl $scriptDir/bglOUT_to_fakePLINK_tped.pl $chroStart $chroEnd $phaseId";
     print STDERR "\n\n\nBEFORE CONTINUING, MAKE SURE THE IND_LIST ONLY CONTAINS THE POPULATIONS YOU WANT TO PROCESS IN THE DOWNSTREAM TESTS!\n";
 }
 
 # here you need to find the list with overlapping cM and Ancestral and extract only those snps from the plink file! AND to split the mapping file into chr..
 
 elsif ($command eq "SplitPhased"){ #the pops file should now include onyl those populations for which iHS and XPEHH should be performed
-    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GENO_PHASED $ARGV[4] $ARGV[5] 3";
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GENO_PHASED $chroStart $chroEnd 3 $command";
 }
 
 elsif ($command eq "MakeIHS"){ # pops_downstream.txt is automatically created by the previous step.
-    system "perl $scriptDir/make_XPEHH.pl pops_downstream.txt $ARGV[4] $ARGV[5]";
+    system "perl $scriptDir/make_XPEHH.pl SplitPhased/pops_downstream.txt $chroStart $chroEnd";
 }
 
 elsif ($command eq "iHS"){ 
-    system "perl $scriptDir/run_iHS_XPEHH.pl iHS genetic_and_alleles.txt  pops_downstream.txt $ARGV[4] $ARGV[5]";
+    system "perl $scriptDir/run_iHS_XPEHH.pl iHS genetic_and_alleles.txt SplitPhased/pops_downstream.txt $chroStart $chroEnd";
 }
 
 elsif ($command eq "XPEHH"){ #please provide the file with all the pairs of populations to be XP-EHHed as last entry of commandline
@@ -183,7 +188,7 @@ elsif ($command eq "XPEHH"){ #please provide the file with all the pairs of popu
 	print STDERR "please provide the file with all the pairs of populations to be tested in the last entry of commandline\n";
 	die;
     }
-    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt pops_downstream.txt $ARGV[4] $ARGV[5] $ARGV[7]"; #XXX ARGV7
+    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt SplitPhased/pops_downstream.txt $chroStart $chroEnd $ARGV[7]"; #XXX ARGV7
 }
 
 else {
