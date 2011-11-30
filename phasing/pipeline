@@ -24,7 +24,6 @@ pipeline <LOCALCONFIG> <COMMAND>
 END
 
 my $list=<<END;
-ref2plink
 OverlapSnps
 CheckStrand
 MergeUnphased
@@ -55,8 +54,6 @@ my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
 #starting point: unphased genotype in plink format, a list of sample IDs with AFRO/OOA labels (if needed) and "refHAPLO", a set of hapmap3 haplotypes, beagle.jar in your folder, iHS.exe and XP-EHH in your folder; a list of reference haplotypes map and ped from chr 2-22"
 
 #options will be:
-#ref2plink to make reference haplotypes into cheated plink format
-
 # MANUALLY CHECK THE OVERLAP AND STRAND CONSISTENCIES BETWEEN HAPLOTYPES AND UNPHASED DATA and OVERLAP.
 
 #MergeUnphased to merge unphased and phased data in Plink format;
@@ -73,40 +70,7 @@ my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
 my $newGeno= $plinkPPrefix."overlap"; #Correct
 
 
-if ($command eq "ref2plink"){
-
-#make list of reference peds and maps to merge
-    open (OUT, ">referencelist.txt");
-    for $i ($ARGV[4]+1 .. $ARGV[5]){ #XXX why +1???
-	if ($ARGV[6] eq "AFRO"){
-	    $map=$ARGV[2].$i."_yri.phased.map";
-	    $ped=$ARGV[2].$i."_yri.phased.ped";
-	}
-	if ($ARGV[6] eq "OOA"){
-	    $map=$ARGV[2].$i."_ceu.phased.map";
-	    $ped=$ARGV[2].$i."_ceu.phased.ped";
-	}
-	print OUT "$ped\t$map\n";
-    }
-    close (OUT);
-    
-    for $i ($ARGV[4] .. $ARGV[5]){
-        if ($ARGV[6] eq "AFRO"){
-            $phased= $ARGV[2].$i."_yri.phased";
-            $prefix= $ARGV[2].$ARGV[4]."_yri.phased";
-        }
-        if ($ARGV[6] eq "OOA"){
-            $phased= $ARGV[2].$i."_ceu.phased";
-            $prefix= $ARGV[2].$ARGV[4]."_ceu.phased";
-        }
-	
-        system "perl $scriptDir/make_cheated_plink.pl $phased hapmap_phased $i";
-    }
-
-    system "plink --file $prefix --merge-list referencelist.txt --make-bed --noweb --out REF"; 
-}
-
-elsif ($command eq "OverlapSnps"){
+if ($command eq "OverlapSnps"){
     $map=$ARGV[3].".bim";
 
     system "perl $scriptDir/best_overlap.pl REF.bim $map";
