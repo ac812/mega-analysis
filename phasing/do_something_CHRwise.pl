@@ -82,7 +82,7 @@ for $k ($chr .. $ARGV[1]){
 	system "ped_to_bgl SplitUnphased/$pedtrios SplitUnphased/$maptrios > Ped2Beagle/$bgltrios"; #get ped into beagle format
     }
     if ($ARGV[3] eq "Markers"){
-	system "cut -f 2,4,5,6 $k/tomarkers.bim > $k/markers_chr$k.txt"; #get testbim files into beagle markers file
-	system "rm $k/tomarkers.*";
+	system "cut -f 2,4,5,6 SplitUnphased/${k}_tomarkers.bim > Ped2Beagle/markers_chr$k.txt"; #get testbim files into beagle markers file
+	system "rm SplitUnphased/${k}_tomarkers.*";
     }
 }

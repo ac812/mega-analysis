@@ -53,8 +53,9 @@ my $phasePop = $lcfg->val( 'Data', 'phasePop' );
 my $allInds = $lcfg->val( 'Data', 'allInds' );
 my $chroStart = $lcfg->val( 'Data', 'chroStart' );
 my $chroEnd = $lcfg->val( 'Data', 'chroEnd' );
+my $phaseId;
 
-if ($phasePop=="CEU") {
+if ($phasePop eq "CEU") {
     $phaseId = "OOA";
 }
 else {
@@ -153,7 +154,9 @@ elsif ($command eq "SplitUnphased"){
 }
 
 elsif ($command eq "Ped2Beagle"){
+    mkdir "Ped2Beagle";
     system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
+    system "gzip Ped2Beagle/*bgl";
 }
 
 elsif ($command eq "Markers"){
