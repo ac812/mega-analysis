@@ -2,15 +2,20 @@
 
 import os
 import sys
+import ConfigParser as config
 
 if len(sys.argv)!=4:
-    print "python %s plinkFile OP cloThres" % (sys.argv[0],)
+    print "Usage: %s plinkFile OP cloThres" % (sys.argv[0].split("/")[-1],)
     print "OP is split, IBS, IBD, statIBD, removeCloser"
     sys.exit(-1)
 
 plink = sys.argv[1]
 OP = sys.argv[2]
 cloThres = float(sys.argv[3])
+
+cfg = config.ConfigParser()
+cfg.read(os.path.expanduser("~/.megacfg"))
+scriptDir = cfg.get("System","admixtureDir")
 
 pops = {}
 for l in sys.stdin:
@@ -48,5 +53,5 @@ elif OP == "statIBD":
         f.close()
 elif OP == "removeCloser":
     for pop in pops:
-        os.system("nice -n19 pyhon removeCloser.py %s %f &" % (pop, cloThres))
+        os.system("nice -n19 pyhon %s/removeCloser.py %s %f &" % (scriptDir, pop, cloThres))
 

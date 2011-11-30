@@ -1,6 +1,7 @@
 #!/usr/local/bin/perl -w
 
 use strict;
+use Config::IniFiles;
 
 my $i;
 my $j;
@@ -9,18 +10,23 @@ my $prefix;
 my $map;
 my $ped;
 
-my $scriptDir="/data6/tr353/usr/pipeline";
+my $cfg = Config::IniFiles->new( -file => "$ENV{HOME}/.megacfg" );
+my $scriptDir = $cfg->val( 'System', 'phasingDir' );
+my $hapmapDB = $cfg->val( 'DB', 'hapmap' );
+
+
+#CMD <list of inds> <phasedHapmapPREFIX> <unphasedGenotypesPREFIX>
+#<chromosomeStart> <chromosomeEnd> <AFRO or OOA> <list of phased ped/map>
 
 my $error=<<END;
 Syntax is:
-pipeline <COMMAND> <list of inds> <phasedHapmapPREFIX> <unphasedGenotypesPREFIX> <chromosomeStart> <chromosomeEnd> <AFRO or OOA> <list of phased ped/map>
+pipeline <LOCALCONFIG> <COMMAND>
 END
 
 my $list=<<END;
 ref2plink
 OverlapSnps
 CheckStrand
-IF NO ERROR MESSAGE FROM PREVIOUS COMMAND HAS OCCURRED...
 MergeUnphased
 SplitUnphased
 Ped2Beagle
@@ -37,6 +43,14 @@ if ($#ARGV==-1 or $ARGV[0] eq "--help"){
     print STDERR "$error\nCOMMANDS are:\n$list";
     exit(-1);
 }
+
+
+my $localcfg= $ARGV[0];
+my $command= $ARGV[1];
+
+my $lcfg = Config::IniFiles->new( -file => $localcfg );
+my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
+
 
 #starting point: unphased genotype in plink format, a list of sample IDs with AFRO/OOA labels (if needed) and "refHAPLO", a set of hapmap3 haplotypes, beagle.jar in your folder, iHS.exe and XP-EHH in your folder; a list of reference haplotypes map and ped from chr 2-22"
 
@@ -56,10 +70,7 @@ if ($#ARGV==-1 or $ARGV[0] eq "--help"){
 
 
 
-
-my $command= $ARGV[0];
-my $newGeno= $ARGV[3]."overlap";
-
+my $newGeno= $plinkPPrefix."overlap"; #Correct
 
 
 if ($command eq "ref2plink"){
@@ -195,7 +206,7 @@ elsif ($command eq "XPEHH"){ #please provide the file with all the pairs of popu
 	print STDERR "please provide the file with all the pairs of populations to be tested in the last entry of commandline\n";
 	die;
     }
-    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt pops_downstream.txt $ARGV[4] $ARGV[5] $ARGV[7]";
+    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt pops_downstream.txt $ARGV[4] $ARGV[5] $ARGV[7]"; #XXX ARGV7
 }
 
 else {
