@@ -81,33 +81,8 @@ for $k ($chr .. $ARGV[1]){
 	system "ped_to_bgl $ped $map > $bgl"; #get ped into beagle format
 	system "ped_to_bgl $pedtrios $maptrios > $bgltrios"; #get ped into beagle format
     }
-    if ($ARGV[3] eq "Beagle"){
-        my %camConf = camLocalInit(6);
-	#system "bsub -P team19 -o $logbeagle -q long -M5000000 -R'select[mem>5000] rusage[mem=5000]' 'java -Xmx5000m -jar beagle.jar lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle'"; #run beagle
-	#system "beagle lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle"; #run beagle
-        $camConf{"out"}="/dev/null";
-	camLocalSubmit(\%camConf, "beagle lowmem=true markers=$markers phased=$bgltrios unphased=$unphased missing=0 out=$outbeagle"); #run beagle
-
-    }
-#system "sed -e 's/1 1/2 2/g' $tosubst > $substed";#subst 1 1 with 2 2 and 0 0 with 1 1 in ped files
-    #system "sed -e 's/0 0/1 1/g' $substed > $tosubst";
-    #system "bsub -P team19 -o $log -q basement './fastPHASE_Linux -K15 -s10 -o$out  -u./STUFF_for_fastPHASE/AFRO_pop_labels.txt -b$known $inp'"; #run fastphase
-    #system "bsub -P team19 'plink --bfile $ARGV[2] --keep-allele-order --make-bed --noweb --chr $k --out $k/test'"; #make bed
     if ($ARGV[3] eq "Markers"){
 	system "cut -f 2,4,5,6 $k/tomarkers.bim > $k/markers_chr$k.txt"; #get testbim files into beagle markers file
 	system "rm $k/tomarkers.*";
     }
-    #system "rm $k/test*"; #remove test bfiles 
-    #system "mkdir $k";
-    #system "cd $k/";
-    #my $file= $k."/shared_snps.txt";
-    #open( INFILE, "<$file" ) or die "Couldn't open $file: $!\n";
-    #my @sharelines= <INFILE>;
-    #my @splitshare= split(/\s+/, $sharelines[0]);
-    #my $pos= ($splitshare[0] - 1);
-    #my $rs= system "sort -k $k/AGEW_chr$k_hwe_cleaned.ToFst | -head -$splitshare[0] | tail -1";
-    #print MARKERS "$splitshare[1]\t$rs";
-    #close (INFILE);
 }
-#close (MARKERS);
-print STDERR "finished\n";

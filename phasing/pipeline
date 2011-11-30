@@ -49,6 +49,8 @@ my $command= $ARGV[1];
 
 my $lcfg = Config::IniFiles->new( -file => $localcfg );
 my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
+my $phasePop = $lcfg->val( 'Data', 'phasePop' );
+my $allInds = $lcfg->val( 'Data', 'allInds' );
 
 
 #starting point: unphased genotype in plink format, a list of sample IDs with AFRO/OOA labels (if needed) and "refHAPLO", a set of hapmap3 haplotypes, beagle.jar in your folder, iHS.exe and XP-EHH in your folder; a list of reference haplotypes map and ped from chr 2-22"
@@ -67,18 +69,27 @@ my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
 
 
 
-my $newGeno= $plinkPPrefix."overlap"; #Correct
+my $newGeno= $plinkPrefix."overlap"; #Correct this XXX
 
 
 if ($command eq "OverlapSnps"){
-    $map=$ARGV[3].".bim";
-
-    system "perl $scriptDir/best_overlap.pl REF.bim $map";
+    $map=$plinkPrefix.".bim";
+    mkdir "OverlapSnps";
+    system "cp ${hapmapDB}/REF${phasePop}.* .";
+    system "cp dataset/* .";
+    system "perl ${scriptDir}/best_overlap.pl REF${phasePop}.bim $map";
+    system "mv *overlap* OverlapSnps";
+    system "rm REF${phasePop}.*";
+    system "rm ${plinkPrefix}.bed";
+    system "rm ${plinkPrefix}.fam";
+    system "rm ${plinkPrefix}.bim";
+    system "rm ${plinkPrefix}.log";
 }
 elsif ( $command eq "CheckStrand"){
+    mkdir "CheckStrand";
 
-    open ( PH, "<REFoverlap.bim");
-    open (UNPH, "<GENOoverlap.bim");
+    open ( PH, "<OverlapSnps/REFoverlap.bim");
+    open (UNPH, "<OverlapSnps/GENOoverlap.bim");
     my @plines= <PH>;
     my @ulines= <UNPH>;
     open (FLIP, ">toflip.txt");
@@ -118,19 +129,21 @@ elsif ( $command eq "CheckStrand"){
     close (PH);
     close (UNPH);
     if ($check==0 and $trick == $#plines){
-        system "plink --bfile REFoverlap --exclude noinfo.txt --make-bed --out REFtomerge --noweb";
-        system "plink --bfile GENOoverlap --exclude noinfo.txt --flip toflip.txt --make-bed --out GENOtomerge --noweb";
+        system "plink --bfile OverlapSnps/REFoverlap --exclude noinfo.txt --make-bed --out CheckStrand/REFtomerge --noweb";
+        system "plink --bfile OverlapSnps/GENOoverlap --exclude noinfo.txt --flip toflip.txt --make-bed --out CheckStrand/GENOtomerge --noweb";
     }
 }
 
 elsif ($command eq "MergeUnphased"){
+    mkdir "MergeUnphased";
     #$map=$ARGV[3]."tomerge.bim";
     #$ped= $newGeno."tomerge.bed";
     #my $fam= $newGeno."tomerge.fam";
-    system "plink --bfile REFtomerge --bmerge GENOtomerge.bed GENOtomerge.bim GENOtomerge.fam --make-bed --noweb --out GLOBAL";
+    system "plink --bfile CheckStrand/REFtomerge --bmerge CheckStrand/GENOtomerge.bed CheckStrand/GENOtomerge.bim CheckStrand/GENOtomerge.fam --make-bed --noweb --out MergeUnphased/GLOBAL";
 }
 
 elsif ($command eq "SplitUnphased"){
+    mkdir "SplitUnphased";
     system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GLOBAL $ARGV[4] $ARGV[5] 2";
 }
 

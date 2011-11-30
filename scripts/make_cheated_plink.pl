@@ -103,5 +103,3 @@ if($ARGV[1] eq "hapmap_phased"){
     close (FILE);
     close(PED);
 }
-
-print STDERR "Finished\n";

@@ -156,3 +156,4 @@ while ($check==0){
 	$i=$k+1;
     }
 }
+system "rm TEMPsnps.txt";
