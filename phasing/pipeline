@@ -29,7 +29,6 @@ CheckStrand
 MergeUnphased
 SplitUnphased
 Ped2Beagle
-Markers
 Beagle
 MergePhased
 SplitPhased
@@ -71,7 +70,7 @@ else {
 #SplitUnphased to split phased and unphased data into each chromosome folder;
 #checkstrand to try and fix strand problems between datasets. However this might still need manual manipulation if snp positions are not the same...
 #Ped2Beagle to make each splitted file into beagle format;
-#Markers to make markers file per each file;
+#           and to make markers file per each file;
 #Beagle to run beagle on each chromosome;
 #Beagle2Plink to convert Beagle output back to cheated plink;
 #further info on how to do iHS and XP-EHH...
@@ -156,14 +155,13 @@ elsif ($command eq "SplitUnphased"){
 elsif ($command eq "Ped2Beagle"){
     mkdir "Ped2Beagle";
     system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
+    system "python $scriptDir/patchBeagle.py Ped2Beagle";
     system "gzip Ped2Beagle/*bgl";
-}
-
-elsif ($command eq "Markers"){
     system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
 }
 
 elsif ($command eq "Beagle"){
+    system "mkdir Beagle";
     system "python $scriptDir/doBeagle.py $chroStart $chroEnd $phaseId";
 }
 
