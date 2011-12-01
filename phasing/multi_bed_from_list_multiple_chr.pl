@@ -41,7 +41,7 @@ for $k ($chr .. $ARGV[3]){
 	    my $log=$pop.".farmput";
 	   #my $extract= $aftercut; #$k."_Genetic_Distances_and_ANCESTRAL_DAFs.txt";
 	    if ($ARGV[4] == 2){
-		system "plink --bfile $ARGV[1] --keep $outfile --chr $k --keep-allele-order --recode --alleleACGT --tab --out $outDir/${k}_$pop --noweb";
+		system "plink --bfile $ARGV[1] --keep $outfile --chr $k --keep-allele-order --recode --alleleACGT --tab --out $outDir/$pop --noweb";
 		if ($count ==0){
 		    
 		    system "plink --bfile $ARGV[1] --keep $outfile --chr $k --keep-allele-order --make-bed --out $outDir/${k}_tomarkers --noweb";
@@ -49,7 +49,7 @@ for $k ($chr .. $ARGV[3]){
 		}
 	    }
 	    if ($ARGV[4] == 3){
-		system "plink --bfile $ARGV[1] --keep $outfile --chr $k --keep-allele-order --recode-fastphase --reference-allele ancestral_alleles.txt --out $outDir/${k}_$pop --noweb";
+		system "plink --bfile $ARGV[1] --keep $outfile --chr $k --keep-allele-order --recode-fastphase --reference-allele ancestral_alleles.txt --out $outDir/$pop --noweb";
 	    }
 	    close (OUT);
 	}

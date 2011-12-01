@@ -9,19 +9,19 @@ startChr = int(sys.argv[1])
 endChr = int(sys.argv[2])
 pop = sys.argv[3]
 
-executor = Executor.Condor()
-executor.javaVMArgs="-Xmx2g"
+#executor = Executor.Condor()
+#executor.javaVMArgs="-Xmx2g"
 for k in range(startChr, endChr+1):
     if pop == "AFRO":
-        bgltrios  = "%d/AFROtrios_chr%d.bgl"  % (k, k)
-        markers   = "%d/markers_chr%d.txt"    % (k, k)
-        unphased  = "%d/AFRICAN_chr%d.bgl"    % (k, k)
-        outbeagle = "%d/phasedAFRO_chr%d.bgl" % (k, k)
+        bgltrios  = "Beagle/AFROtrios_chr%d.bgl"  % (k,)
+        markers   = "Ped2Beagle/markers_chr%d.txt"    % (k,)
+        unphased  = "%d/AFRICAN_chr%d.bgl"    % (k,)
+        outbeagle = "%d/phasedAFRO_chr%d.bgl" % (k,)
     elif pop == "OOA":
-        bgltrios  = "%d/OOAtrios_chr%d.bgl"   % (k, k)
-        markers   = "%d/markers_chr%d.txt"    % (k, k)
-        unphased  = "%d/OOA_chr%d.bgl"        % (k, k)
-        outbeagle = "%d/phasedOOA_chr%d.bgl"  % (k, k)
+        bgltrios  = "Beagle/OOAtrios_chr%d.bgl"   % (k,)
+        markers   = "Ped2Beagle/markers_chr%d.txt"    % (k,)
+        unphased  = "%d/OOA_chr%d.bgl"        % (k,)
+        outbeagle = "%d/phasedOOA_chr%d.bgl"  % (k,)
     else:
         print "Unknown reference population: %s " % (pop, )
         sys.exit(-1)
