@@ -1,0 +1,66 @@
+#!/usr/local/bin/python
+
+import os
+import sys
+import ConfigParser as config
+
+if len(sys.argv)!=1:
+    print "Usage: %s" % (sys.argv[0].split("/")[-1],)
+    sys.exit(-1)
+
+cfg = config.ConfigParser()
+cfg.read(os.path.expanduser("~/.megacfg"))
+scriptDir = cfg.get("System","metaDir")
+metaDB = cfg.get("DB","meta")
+
+
+os.system(
+    "python %s/mergeSources.py %s/tartu.tab %s/extended.tab > %s/merge.tab" %
+            (scriptDir, metaDB, metaDB, metaDB))
+
+def correct(myFile, wrong, right):
+    os.system("perl -pi -e 's/%s/%s/g' %s" % (wrong, right, myFile))
+
+myFile = metaDB + "/merge.tab"
+correct(myFile, "Egyptans", "Egyptians")
+correct(myFile, "Ethipoia", "Ethiopia")
+correct(myFile, "North_Ossetians", "North Ossetians")
+correct(myFile, "Uzbekistan_Jews", "Uzbekistan Jews")
+correct(myFile, "Bulgarian_gypsies", "Bulgarian Gypsies")
+correct(myFile, "Indian_Jews", "Indian Jews")
+correct(myFile, "EastIndian", "East Indians")
+correct(myFile, "\teven\t", "\tEven\t")
+correct(myFile, "\tkalmyk\t", "\tKalmyk\t")
+correct(myFile, "\tkurd\t", "\tKurd\t")
+correct(myFile, "FRANCE_JEW", "France Jews")
+correct(myFile, "IranJew", "Iran Jews")
+correct(myFile, "KurdJew", "Kurd Jews")
+correct(myFile, "Macedonian_Gypsies", "Macedonian Gypsies")
+correct(myFile, "Aeta ", "Aeta")
+correct(myFile, "Batak ", "Batak")
+correct(myFile, "Belarussian\t", "Belarusian\t")
+correct(myFile, "Belorussian\t", "Belarusian\t")
+correct(myFile, " BENGALI", "Bengali")
+correct(myFile, "Biaka Pygmies ", "Biaka Pygmies")
+correct(myFile, "BRAHMIN", "Brahmin")
+correct(myFile, "Dolgan\t", "Dolgans\t")
+correct(myFile, "HAZARA", "Hazara")
+correct(myFile, "\tkazakh\t", "\tKazakhs\t")
+correct(myFile, "KHARIA", "Kharia")
+correct(myFile, "LOW_CASTE", "Low Caste")
+correct(myFile, "LOW CASTE", "Low Caste")
+correct(myFile, "NORTH KANNADI", "North Kannadi")
+correct(myFile, "NORTH_KANNADI", "")
+correct(myFile, "Piramalai_Kallar", "Piramalai Kallar")
+correct(myFile, "Romanian_Jews", "Romanian Jews")
+correct(myFile, "SAVARA", "Savara")
+correct(myFile, "\tSelkup\t", "\tSelkups\t")
+correct(myFile, "Sephardic_Jews", "Sephardic Jews")
+correct(myFile, "Slovakian_gypsies", "Slovakian Gypsies")
+correct(myFile, "Russian", "Russia") # ... To avoid country problems
+#correct(myFile, "", "")
+#correct(myFile, "", "")
+#correct(myFile, "", "")
+#correct(myFile, "", "")
+#correct(myFile, "", "")
+#correct(myFile, "", "")
