@@ -50,6 +50,8 @@ my $lcfg = Config::IniFiles->new( -file => $localcfg );
 my $plinkPrefix = $lcfg->val( 'Data', 'plinkPrefix' );
 my $phasePop = $lcfg->val( 'Data', 'phasePop' );
 my $allInds = $lcfg->val( 'Data', 'allInds' );
+my $haploInds = $lcfg->val( 'Data', 'haploInds' );
+my $popPairs = $lcfg->val( 'Data', 'popPairs' );
 my $chroStart = $lcfg->val( 'Data', 'chroStart' );
 my $chroEnd = $lcfg->val( 'Data', 'chroEnd' );
 my $phaseId;
@@ -167,30 +169,29 @@ elsif ($command eq "Beagle"){
 }
 
 elsif ($command eq "MergePhased"){
+    mkdir "MergePhased";
     system "perl $scriptDir/bglOUT_to_fakePLINK_tped.pl $chroStart $chroEnd $phaseId";
-    print STDERR "\n\n\nBEFORE CONTINUING, MAKE SURE THE IND_LIST ONLY CONTAINS THE POPULATIONS YOU WANT TO PROCESS IN THE DOWNSTREAM TESTS!\n";
 }
 
-# here you need to find the list with overlapping cM and Ancestral and extract only those snps from the plink file! AND to split the mapping file into chr..
-
-elsif ($command eq "SplitPhased"){ #the pops file should now include onyl those populations for which iHS and XPEHH should be performed
-    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $ARGV[1] GENO_PHASED $chroStart $chroEnd 3 $command";
+elsif ($command eq "SplitPhased"){
+    mkdir "SplitPhased";
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $haploInds MergePHased/GENO_PHASED $chroStart $chroEnd 3 $command";
 }
 
-elsif ($command eq "MakeIHS"){ # pops_downstream.txt is automatically created by the previous step.
+elsif ($command eq "MakeIHS"){
+    mkdir "MakeIHS";
+    # pops_downstream.txt is automatically created by the previous step.
     system "perl $scriptDir/make_XPEHH.pl SplitPhased/pops_downstream.txt $chroStart $chroEnd";
 }
 
 elsif ($command eq "iHS"){ 
+    mkdir "iHS";
     system "perl $scriptDir/run_iHS_XPEHH.pl iHS genetic_and_alleles.txt SplitPhased/pops_downstream.txt $chroStart $chroEnd";
 }
 
-elsif ($command eq "XPEHH"){ #please provide the file with all the pairs of populations to be XP-EHHed as last entry of commandline
-    if ($#ARGV < 7){
-	print STDERR "please provide the file with all the pairs of populations to be tested in the last entry of commandline\n";
-	die;
-    }
-    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt SplitPhased/pops_downstream.txt $chroStart $chroEnd $ARGV[7]"; #XXX ARGV7
+elsif ($command eq "XPEHH"){
+    mkdir "XPEHH";
+    system "perl $scriptDir/run_iHS_XPEHH.pl XPEHH genetic_and_alleles.txt SplitPhased/pops_downstream.txt $chroStart $chroEnd $popPairs";
 }
 
 else {
