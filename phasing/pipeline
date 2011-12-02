@@ -154,10 +154,11 @@ elsif ($command eq "SplitUnphased"){
 
 elsif ($command eq "Ped2Beagle"){
     mkdir "Ped2Beagle";
+    system "rm -rf Ped2Beagle/*";
     system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
     system "python $scriptDir/patchBeagle.py Ped2Beagle";
     system "gzip Ped2Beagle/*bgl";
-    system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId $command";
+    system "perl $scriptDir/do_something_CHRwise.pl $chroStart $chroEnd $phaseId Markers";
 }
 
 elsif ($command eq "Beagle"){
