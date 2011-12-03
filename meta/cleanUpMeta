@@ -14,14 +14,15 @@ scriptDir = cfg.get("System","metaDir")
 metaDB = cfg.get("DB","meta")
 
 
+myFile = metaDB + "/merge.tab"
+header = metaDB + "/header"
 os.system(
-    "python %s/mergeSources.py %s/tartu.tab %s/extended.tab > %s/merge.tab" %
-            (scriptDir, metaDB, metaDB, metaDB))
+    "python %s/mergeSources.py %s/tartu.tab %s/extended.tab > %s 2>%s" %
+            (scriptDir, metaDB, metaDB, myFile, header))
 
 def correct(myFile, wrong, right):
     os.system("perl -pi -e 's/%s/%s/g' %s" % (wrong, right, myFile))
 
-myFile = metaDB + "/merge.tab"
 correct(myFile, "Egyptans", "Egyptians")
 correct(myFile, "Ethipoia", "Ethiopia")
 correct(myFile, "North_Ossetians", "North Ossetians")
@@ -64,3 +65,5 @@ correct(myFile, "Russian", "Russia") # ... To avoid country problems
 #correct(myFile, "", "")
 #correct(myFile, "", "")
 #correct(myFile, "", "")
+
+os.system("sort -t\\t -k3,3 %s > %s/clean.tab" % (myFile, metaDB))

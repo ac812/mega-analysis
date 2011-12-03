@@ -44,7 +44,7 @@ for l in tHdl:
     #print tRecs[(sampId,famId)]
 tHdl.close()
 
-print "\t".join(["sampId", "famId", "pop", "refPop", "region", "localAdmin",
+print >>sys.stderr, "\t".join(["sampId", "famId", "pop", "refPop", "region", "localAdmin",
     "country", "continent", "lang", "source", "chip", "census", "mi",
      "height", "mtDNA", "HVS1",
     "YChro", "purity", "unrel", "adults", "r", "jew3", "rr", "oldId"])
