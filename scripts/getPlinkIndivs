@@ -1,0 +1,27 @@
+#!/usr/local/bin/python
+
+import os
+import sys
+import ConfigParser as config
+import MEGA
+
+if len(sys.argv) not in [1,2]:
+    print "Usage: %s [pop]" % (sys.argv[0].split("/")[-1],)
+    sys.exit(-1)
+
+if len(sys.argv)==2:
+    pop = sys.argv[1]
+else:
+    pop = None
+
+cfg = config.ConfigParser()
+cfg.read(os.path.expanduser("~/.megacfg"))
+metaDB = cfg.get("DB","meta")
+
+f = open(metaDB + os.sep + "clean.tab")
+f.readline() # header
+for l in f:
+    rec = MEGA.getRecord(l)
+    if not pop or pop == rec["pop"]:
+        print "\t".join([rec["sampId"], rec["famId"], rec["pop"]])
+f.close()
