@@ -13,14 +13,16 @@ open (OUT, ">MergePhased/phased_files.txt");
 
 for $k ($ARGV[0] .. $ARGV[1]){
     my $markers= "SplitUnphased/OOAtrios_chr".$k.".map"; 
-    my $toglob= "Beagle/phased".$ARGV[2]."_chr".$k.".bgl.".$ARGV[2]."_chr".$k.".bgl.phased.gz"; #be careful to exclude trios!
+    my $toglob= "phased".$ARGV[2]."_chr".$k.".bgl.gz.".$ARGV[2]."_chr".$k.".bgl.gz.phased.gz"; #be careful to exclude trios!
     #print STDERR "dealing with chromosome $k...\n";
+    chdir "Beagle";
     @phased= glob ("$toglob");
+    chdir "..";
     foreach my $file (@phased){
 	#print STDERR "file is $file...\n";
 	$ped= "MergePhased/".$file.".tempped";
 	my $fam= "MergePhased/".$file.".tfam";
-	system "gzip $file -d -c > MergePhased/unzipped.txt";
+	system "gzip Beagle/$file -d -c > MergePhased/unzipped.txt";
 	open (FILE, "<MergePhased/unzipped.txt");
 	my @lines= <FILE>;
 	chomp @lines;
@@ -60,9 +62,9 @@ for $k ($ARGV[0] .. $ARGV[1]){
 	#@split=();
 	
 	my $final= $file.".tped";
-	system "paste $markers $ped > $final";
+	system "paste $markers MergePhased/$ped > MergePhased/$final";
 	my $out= "MergePhased/".$k.$ARGV[2]."phased";
-	system "plink --tfile $file --recode --alleleACGT --noweb --out $out";
+	system "plink --tfile MergePhased/$file --recode --alleleACGT --noweb --out $out";
 	my $ped= $out.".ped";
 	my $map= $out.".map";
 	if ($k==$ARGV[0]){

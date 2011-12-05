@@ -4,44 +4,48 @@ import os
 import sys
 import ConfigParser as config
 
-if len(sys.argv)!=4:
-    print "Usage: %s plinkFile OP cloThres" % (sys.argv[0].split("/")[-1],)
+if len(sys.argv)!=3:
+    print "Usage: %s OP cloThres" % (sys.argv[0].split("/")[-1],)
     print "OP is split, IBS, IBD, statIBD, removeCloser"
     sys.exit(-1)
 
-plink = sys.argv[1]
-OP = sys.argv[2]
-cloThres = float(sys.argv[3])
+OP = sys.argv[1]
+cloThres = float(sys.argv[2])
 
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
 scriptDir = cfg.get("System","admixtureDir")
+plinkDB = cfg.get("DB", "plink")
 
 pops = {}
 for l in sys.stdin:
-    toks = l.rstrip().split(" ")
+    toks = l.rstrip().split("\t")
     pops.setdefault(toks[2], []).append([toks[0], toks[1]])
 
 
 
 if OP == "split":
     for pop in pops:
-        fName ="%s_lst.txt" % (pop,)
+        pop_ = pop.replace(" ", "_")
+        fName ="%s_lst.txt" % (pop_,)
         f = open(fName, "w")
-        for indiv in pops:
-            f.write(" ".join(indivs))
+        for indiv in pops[pop]:
+            f.write(" ".join(indiv))
             f.write(" " + pop)
             f.write("\n")
         f.close()
-        os.system("nice -n19 plink --bfile %s --keep %s --noweb --out %s &" % (plink, fName, pop))
+        os.system("nice -n19 plink --bfile %s --keep %s --noweb --out %s --make-bed &" % (plinkDB, fName, pop_))
 elif OP == "IBS":
     for pop in pops:
+        pop = pop.replace(" ","_")
         os.system("nice -n19 plink --bfile %s --cluster --neighbour 1 5 --noweb --out %s &" % (pop, pop))
 elif OP == "IBD":
     for pop in pops:
+        pop = pop.replace(" ","_")
         os.system("nice -n19 plink --bfile %s --genome --noweb --min %f --out %s &" % (pop, cloThres, pop))
 elif OP == "statIBD":
     for pop in pops:
+        pop = pop.replace(" ","_")
         f = open("%s.genome" % (pop))
         f.readline()
         vals = []

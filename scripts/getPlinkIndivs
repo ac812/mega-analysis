@@ -19,7 +19,6 @@ cfg.read(os.path.expanduser("~/.megacfg"))
 metaDB = cfg.get("DB","meta")
 
 f = open(metaDB + os.sep + "clean.tab")
-f.readline() # header
 for l in f:
     rec = MEGA.getRecord(l)
     if not pop or pop == rec["pop"]:
