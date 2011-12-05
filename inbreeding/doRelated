@@ -3,14 +3,19 @@
 import os
 import sys
 import ConfigParser as config
+import Executor
 
-if len(sys.argv)!=3:
-    print "Usage: %s OP cloThres" % (sys.argv[0].split("/")[-1],)
+if len(sys.argv)!=2:
+    print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
+    #print "Usage: %s OP cloThres" % (sys.argv[0].split("/")[-1],)
     print "OP is split, IBS, IBD, statIBD, removeCloser"
     sys.exit(-1)
 
 OP = sys.argv[1]
-cloThres = float(sys.argv[2])
+#cloThres = float(sys.argv[2])
+cloThres=0.0
+
+lexec = Executor.Local(4)
 
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
@@ -20,9 +25,12 @@ plinkDB = cfg.get("DB", "plink")
 pops = {}
 for l in sys.stdin:
     toks = l.rstrip().split("\t")
-    pops.setdefault(toks[2], []).append([toks[0], toks[1]])
-
-
+    try:
+        pops.setdefault(toks[2], []).append([toks[0], toks[1]])
+    except IndexError:
+        print >>sys.stderr, "Error at:"
+        print >>sys.stderr, l
+        sys.exit(-1)
 
 if OP == "split":
     for pop in pops:
@@ -34,11 +42,13 @@ if OP == "split":
             f.write(" " + pop)
             f.write("\n")
         f.close()
-        os.system("nice -n19 plink --bfile %s --keep %s --noweb --out %s --make-bed &" % (plinkDB, fName, pop_))
+        #os.system("nice -n19 plink --bfile %s --keep %s --noweb --out %s --make-bed &" % (plinkDB, fName, pop_))
+        lexec.submit("plink", "--bfile %s --keep %s --noweb --out %s --make-bed " % (plinkDB, fName, pop_))
 elif OP == "IBS":
     for pop in pops:
         pop = pop.replace(" ","_")
-        os.system("nice -n19 plink --bfile %s --cluster --neighbour 1 5 --noweb --out %s &" % (pop, pop))
+        #os.system("nice -n19 plink --bfile %s --cluster --neighbour 1 5 --noweb --out %s &" % (pop, pop))
+        lexec.submit("plink", "--bfile %s --cluster --neighbour 1 5 --noweb --out %s" % (pop, pop))
 elif OP == "IBD":
     for pop in pops:
         pop = pop.replace(" ","_")

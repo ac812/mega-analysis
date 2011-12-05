@@ -109,16 +109,15 @@ class Local:
     def wait(self):
         '''Blocks if there are no slots available (high load av)
         '''
+        time.sleep(1)
         self.cleanDone()
         numWaits = 0
-        l1, l5, l15 = os.getloadavg()
-        #print l1, self.cpus - self.limit
-        while len(self.running) >= (self.cpus - self.limit) - l1:
+        while len(self.running) >= self.cpus - self.limit:
             time.sleep(1)
             self.cleanDone()
-            if numWaits % 10 == 9:
+            if numWaits % 10 == 0 and numWaits>0:
                 print "Waiting for %d seconds. Current load %f, max %d" % (
-                      numWaits, l1, self.cpus - self.limit
+                      numWaits, os.getloadavg()[0], self.cpus - self.limit
                       )
             numWaits += 1
 
@@ -126,8 +125,16 @@ class Local:
         '''Submits a job
         '''
         self.wait()  
-        paraList = parameters.split(" ")
-        p = subprocess.Popen( "%s %s > %s" % (command, parameters, self.out),
+        if hasattr(self, "out"):
+            out = self.out
+        else:
+            out = "/dev/null"
+        if hasattr(self, "err"):
+            err = self.out
+        else:
+            err = "/dev/null"
+        p = subprocess.Popen( "%s %s > %s 2> %s" % 
+                        (command, parameters, out, err),
                         shell=True)
         self.running.append(p)
 

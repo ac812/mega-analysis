@@ -23,4 +23,5 @@ f.close()
 popNames = pops.keys()
 popNames.sort()
 for pop in popNames:
-    print pop
+    if pop !="":
+        print pop

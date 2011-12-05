@@ -11,6 +11,7 @@ my @matrix;
 my $first;
 open (OUT, ">MergePhased/phased_files.txt");
 
+$ARGV[1]=2;#XXX
 for $k ($ARGV[0] .. $ARGV[1]){
     my $markers= "SplitUnphased/OOAtrios_chr".$k.".map"; 
     my $toglob= "phased".$ARGV[2]."_chr".$k.".bgl.gz.".$ARGV[2]."_chr".$k.".bgl.gz.phased.gz"; #be careful to exclude trios!
@@ -64,7 +65,7 @@ for $k ($ARGV[0] .. $ARGV[1]){
 	my $final= $file.".tped";
 	system "paste $markers MergePhased/$ped > MergePhased/$final";
 	my $out= "MergePhased/".$k.$ARGV[2]."phased";
-	system "plink --tfile MergePhased/$file --recode --alleleACGT --noweb --out $out";
+	system "plink --tfile Beagle/$file --recode --alleleACGT --noweb --out $out";
 	my $ped= $out.".ped";
 	my $map= $out.".map";
 	if ($k==$ARGV[0]){

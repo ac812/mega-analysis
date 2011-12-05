@@ -54,12 +54,15 @@ correct(myFile, "NORTH KANNADI", "North Kannadi")
 correct(myFile, "NORTH_KANNADI", "")
 correct(myFile, "Piramalai_Kallar", "Piramalai Kallar")
 correct(myFile, "Romanian_Jews", "Romanian Jews")
+correct(myFile, "Yemen_Jews", "Yemen Jews")
 correct(myFile, "SAVARA", "Savara")
 correct(myFile, "\tSelkup\t", "\tSelkups\t")
 correct(myFile, "Sephardic_Jews", "Sephardic Jews")
 correct(myFile, "Slovakian_gypsies", "Slovakian Gypsies")
 correct(myFile, "Russian", "Russia") # ... To avoid country problems
-#correct(myFile, "", "")
+correct(myFile, "KHASI", "Khasi")
+correct(myFile, "\(LYNGAM\)", "Lyngam") #Khasi
+correct(myFile, "\(PNAR\)", "Pnar") #Khasi
 #correct(myFile, "", "")
 #correct(myFile, "", "")
 #correct(myFile, "", "")

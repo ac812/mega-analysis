@@ -1,0 +1,110 @@
+#!/usr/local/bin/python
+
+import os
+import sys
+import MEGA
+import rpy2.robjects as robjects
+from rpy2.robjects.vectors import DataFrame
+
+if len(sys.argv) != 3:
+    print "%s admixture.Q indlist"
+    sys.exit(-1)
+
+admix = sys.argv[1]
+indList = sys.argv[2]
+
+indivPop = MEGA.getPop4Indiv()
+
+inds = []
+f = open(indList)
+for l in f:
+    inds.append(l.split(" ")[0])
+f.close()
+
+lines = []
+f = open(admix)
+for l in f:
+    #lines.append(map(lambda x: float(x), l.rstrip().split(" ")))
+    lines.append(l)
+f.close()
+
+popMembers = {}
+originalPopOrder=[]
+myPop = []
+for i in range(len(inds)):
+    pop = indivPop[inds[i]]
+    popMembers.setdefault(pop, []).append(i)
+    myPop.append(pop)
+    if pop not in originalPopOrder:
+        originalPopOrder.append(pop)
+
+def clusterPop(admix, indexes):
+    subf = "adm.%d" % (os.getpid(),)
+    w = open(subf, "w")
+    f = open(admix)
+    fPos = 0
+    oldOrder = []
+    for l in f:
+        if fPos in indexes:
+            w.write(l)
+            oldOrder.append(fPos)
+        fPos += 1
+    f.close()
+    w.close()
+    df = DataFrame.from_csvfile(subf, sep=" ", header=False)
+    d=robjects.r.hclust(robjects.r.dist(df))
+    for name, value in d.iteritems():
+        if name=="order":
+            order = value
+            break
+    os.remove(subf)
+    reOrder = []
+    for pos in order:
+        reOrder.append(oldOrder[pos-1])
+    return reOrder
+
+def clusterAll(admix, myPop):
+    f = open(admix)
+    ls = f.readlines()
+    f.close()
+    numK = len(ls[0].split(" "))
+    pops = {}
+    for i in range(len(ls)):
+        vals = map(lambda x: float(x), ls[i].rstrip().split(" "))
+        cnt, accu = pops.get(myPop[i], (0, [0.0]*numK))
+        cnt += 1
+        for i2 in range(numK): accu[i2] += vals[i2]
+        pops[myPop[i]] = cnt, accu
+    popNames = pops.keys()
+    popNames.sort()
+    subf = "accu.%d" % (os.getpid(),)
+    w = open(subf, "w")
+    for popName in popNames:
+        myVals = pops[popName][1]
+        cnt = pops[popName][0]
+        myVals = map(lambda x: x/cnt, myVals)
+        w.write(" ".join(map(lambda x: str(x), myVals)))
+        w.write("\n")
+    w.close()
+    df = DataFrame.from_csvfile(subf, sep=" ", header=False)
+    d=robjects.r.hclust(robjects.r.dist(df, method="max"), method="complete")
+    for name, value in d.iteritems():
+        if name=="order":
+            order = value
+            break
+    os.remove(subf)
+    popOrder = []
+    for pos in order:
+        popOrder.append(popNames[pos-1])
+    return popOrder
+
+popReorder = {}
+for pop in popMembers:
+    popReorder[pop] = clusterPop(admix, popMembers[pop])
+
+goodOrder = clusterAll(admix, myPop)
+
+internalReorder = []
+for pop in goodOrder:
+    for indiv in popReorder[pop]:
+        print str(indiv) + "\t" +  pop + "\t" + inds[indiv]
