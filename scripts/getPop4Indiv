@@ -1,0 +1,27 @@
+#!/usr/local/bin/python
+
+import os
+import sys
+import ConfigParser as config
+import MEGA
+
+if len(sys.argv) not in [1]:
+    print "Usage: %s" % (sys.argv[0].split("/")[-1],)
+    sys.exit(-1)
+
+cfg = config.ConfigParser()
+cfg.read(os.path.expanduser("~/.megacfg"))
+metaDB = cfg.get("DB","meta")
+
+pops = {}
+f = open(metaDB + os.sep + "clean.tab")
+for l in f:
+    rec = MEGA.getRecord(l)
+    pops[rec["pop"]]=1
+f.close()
+
+popNames = pops.keys()
+popNames.sort()
+for pop in popNames:
+    if pop !="":
+        print pop
