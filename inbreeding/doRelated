@@ -5,22 +5,29 @@ import sys
 import ConfigParser as config
 import Executor
 
-if len(sys.argv)!=2:
-    print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
-    #print "Usage: %s OP cloThres" % (sys.argv[0].split("/")[-1],)
-    print "OP is split, IBS, IBD, statIBD, removeCloser"
+if len(sys.argv) not in[2,3]:
+    #print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
+    print "Usage: %s OP [cloThres]" % (sys.argv[0].split("/")[-1],)
+    print "OP is split, IBS, IBD, statIBD, removeCloserIBD, removeDistant"
     sys.exit(-1)
 
 OP = sys.argv[1]
-#cloThres = float(sys.argv[2])
-cloThres=0.0
+if len(sys.argv)==3:
+    cloThres = float(sys.argv[2])
+else:
+    cloThres = 0.0
 
 lexec = Executor.Local(4)
 
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
-scriptDir = cfg.get("System","admixtureDir")
+scriptDir = cfg.get("System","ibDir")
 plinkDB = cfg.get("DB", "plink")
+
+try:
+    os.mkdir("ibdata")
+except OSError:
+    pass # Already exists
 
 pops = {}
 for l in sys.stdin:
@@ -35,28 +42,32 @@ for l in sys.stdin:
 if OP == "split":
     for pop in pops:
         pop_ = pop.replace(" ", "_")
-        fName ="%s_lst.txt" % (pop_,)
+        fName ="ibdata/%s_lst.txt" % (pop_,)
         f = open(fName, "w")
         for indiv in pops[pop]:
             f.write(" ".join(indiv))
             f.write(" " + pop)
             f.write("\n")
         f.close()
-        #os.system("nice -n19 plink --bfile %s --keep %s --noweb --out %s --make-bed &" % (plinkDB, fName, pop_))
-        lexec.submit("plink", "--bfile %s --keep %s --noweb --out %s --make-bed " % (plinkDB, fName, pop_))
+        #os.system("nice -n19 plink --bfile %s --keep %s --noweb --out ibdata/%s --make-bed &" % (plinkDB, fName, pop_))
+        lexec.submit("plink", "--bfile %s --keep %s --noweb --out ibdata/%s --make-bed " % (plinkDB, fName, pop_))
+    lexec.wait(True)
 elif OP == "IBS":
     for pop in pops:
         pop = pop.replace(" ","_")
-        #os.system("nice -n19 plink --bfile %s --cluster --neighbour 1 5 --noweb --out %s &" % (pop, pop))
-        lexec.submit("plink", "--bfile %s --cluster --neighbour 1 5 --noweb --out %s" % (pop, pop))
+        #os.system("nice -n19 plink --bfile ibdata/%s --cluster --neighbour 1 5 --noweb --out ibdata/%s &" % (pop, pop))
+        lexec.submit("plink", "--bfile ibdata/%s --cluster --neighbour 1 5 --noweb --out ibdata/%s" % (pop, pop))
+    lexec.wait(True)
 elif OP == "IBD":
     for pop in pops:
         pop = pop.replace(" ","_")
-        os.system("nice -n19 plink --bfile %s --genome --noweb --min %f --out %s &" % (pop, cloThres, pop))
+        #os.system("nice -n19 plink --bfile ibdata/%s --genome --noweb --min %f --out ibdata/%s &" % (pop, cloThres, pop))
+        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --out ibdata/%s" % (pop, cloThres, pop))
+    lexec.wait(True)
 elif OP == "statIBD":
     for pop in pops:
         pop = pop.replace(" ","_")
-        f = open("%s.genome" % (pop))
+        f = open("ibdata/%s.genome" % (pop))
         f.readline()
         vals = []
         for l in f:
@@ -65,7 +76,15 @@ elif OP == "statIBD":
         vals.sort()
         print "%12s" % (pop,), "%.3f " % (sum(vals)/len(vals),), "%.3f " % (vals[len(vals)/2],), len(vals)
         f.close()
-elif OP == "removeCloser":
+elif OP == "removeCloserIBD":
     for pop in pops:
-        os.system("nice -n19 pyhon %s/removeCloser.py %s %f &" % (scriptDir, pop, cloThres))
+        print pop
+        #os.system("nice -n19 python %s/removeCloserIBD.py ibdata/%s %f &" % (scriptDir, pop, cloThres))
+        lexec.submit("python", "%s/removeCloserIBD.py %s %f" % (scriptDir, pop.replace(" ", "_"), cloThres))
+    lexec.wait(True)
+elif OP == "removeDistant":
+    for pop in pops:
+        print pop
+        lexec.submit("python", "%s/removeDistant.py %s " % (scriptDir, pop.replace(" ", "_"),))
+    lexec.wait(True)
 

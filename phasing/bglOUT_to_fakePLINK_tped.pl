@@ -11,7 +11,6 @@ my @matrix;
 my $first;
 open (OUT, ">MergePhased/phased_files.txt");
 
-$ARGV[1]=2;#XXX
 for $k ($ARGV[0] .. $ARGV[1]){
     my $markers= "SplitUnphased/OOAtrios_chr".$k.".map"; 
     my $toglob= "phased".$ARGV[2]."_chr".$k.".bgl.gz.".$ARGV[2]."_chr".$k.".bgl.gz.phased.gz"; #be careful to exclude trios!
@@ -23,8 +22,9 @@ for $k ($ARGV[0] .. $ARGV[1]){
 	#print STDERR "file is $file...\n";
 	$ped= "MergePhased/".$file.".tempped";
 	my $fam= "MergePhased/".$file.".tfam";
-	system "gzip Beagle/$file -d -c > MergePhased/unzipped.txt";
-	open (FILE, "<MergePhased/unzipped.txt");
+	#system "gzip Beagle/$file -d -c > MergePhased/unzipped.txt";
+	#open (FILE, "<MergePhased/unzipped.txt");
+	open (FILE, "-|", "zcat Beagle/$file");
 	my @lines= <FILE>;
 	chomp @lines;
 	open (PED, ">$ped");
@@ -63,9 +63,9 @@ for $k ($ARGV[0] .. $ARGV[1]){
 	#@split=();
 	
 	my $final= $file.".tped";
-	system "paste $markers MergePhased/$ped > MergePhased/$final";
+	system "paste $markers $ped > MergePhased/$final";
 	my $out= "MergePhased/".$k.$ARGV[2]."phased";
-	system "plink --tfile Beagle/$file --recode --alleleACGT --noweb --out $out";
+	system "plink --tfile MergePhased/$file --recode --alleleACGT --noweb --out $out";
 	my $ped= $out.".ped";
 	my $map= $out.".map";
 	if ($k==$ARGV[0]){
@@ -78,5 +78,3 @@ for $k ($ARGV[0] .. $ARGV[1]){
 }
 close (OUT);
 system "plink --file $first --merge-list MergePhased/phased_files.txt --make-bed --out MergePhased/GENO_PHASED --noweb";
-print STDERR "Finished pooling phased data together!\n";
-			

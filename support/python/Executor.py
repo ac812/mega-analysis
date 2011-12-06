@@ -106,18 +106,19 @@ class Local:
             del self.running[myDel]
        
 
-    def wait(self):
-        '''Blocks if there are no slots available (high load av)
+    def wait(self, forAll = False):
+        '''Blocks if there are no slots available
         '''
         time.sleep(1)
         self.cleanDone()
         numWaits = 0
-        while len(self.running) >= self.cpus - self.limit:
+        while len(self.running) >= self.cpus - self.limit or (forAll and len(self.running)>0):
             time.sleep(1)
             self.cleanDone()
             if numWaits % 10 == 0 and numWaits>0:
-                print "Waiting for %d seconds. Current load %f, max %d" % (
-                      numWaits, os.getloadavg()[0], self.cpus - self.limit
+                print "Waiting for %d seconds. Current load %f, maxp %d, curr %d" % (
+                      numWaits, os.getloadavg()[0], self.cpus - self.limit,
+                      len(self.running)
                       )
             numWaits += 1
 
@@ -130,7 +131,7 @@ class Local:
         else:
             out = "/dev/null"
         if hasattr(self, "err"):
-            err = self.out
+            err = self.err
         else:
             err = "/dev/null"
         p = subprocess.Popen( "%s %s > %s 2> %s" % 

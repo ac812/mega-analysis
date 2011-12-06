@@ -69,4 +69,6 @@ correct(myFile, "\(PNAR\)", "Pnar") #Khasi
 #correct(myFile, "", "")
 #correct(myFile, "", "")
 
+#XXX do rstrip (at least on pops)
+
 os.system("sort -t\\t -k3,3 %s > %s/clean.tab" % (myFile, metaDB))
