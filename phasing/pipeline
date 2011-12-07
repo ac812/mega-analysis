@@ -175,7 +175,8 @@ elsif ($command eq "MergePhased"){
 
 elsif ($command eq "SplitPhased"){
     mkdir "SplitPhased";
-    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl $haploInds MergePHased/GENO_PHASED $chroStart $chroEnd 3 $command";
+    system "cat $haploInds | python $scriptDir/attachAB.py > SplitPhased/$haploInds";
+    system "perl $scriptDir/multi_bed_from_list_multiple_chr.pl SplitPhased/$haploInds MergePhased/GENO_PHASED $chroStart $chroEnd 3 $command";
 }
 
 elsif ($command eq "MakeIHS"){

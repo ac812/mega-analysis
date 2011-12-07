@@ -13,11 +13,8 @@ my @all= split(/\s+/, $lines[0]);
 close (FILE);
 my $dir;
 
-
-
 for $chr ($ARGV[1] .. $ARGV[2]){
    #print STDERR "doing chromosome $chr...\n";
-   # my @all= (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
     for $i (0 .. $#all-1){
 	my $group= $all[$i];
 	my $file= "SplitPhased/".$group."_chr".$chr.".recode.phase.inp";
