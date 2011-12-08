@@ -1,0 +1,20 @@
+#!/usr/local/bin/python
+
+import os
+import sys
+import ConfigParser as config
+import MEGA
+
+if len(sys.argv) != 3:
+    print "Usage: %s popfile plinkfile" % (sys.argv[0].split("/")[-1],)
+    sys.exit(-1)
+
+popFile = sys.argv[1]
+plinkFile = sys.argv[2]
+
+cfg = config.ConfigParser()
+cfg.read(os.path.expanduser("~/.megacfg"))
+plinkDB = cfg.get("DB","plink")
+
+
+os.system("plink --bfile %s --make-bed --keep %s --out %s --noweb" % (plinkDB, popFile, plinkFile))

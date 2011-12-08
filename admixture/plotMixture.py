@@ -15,7 +15,7 @@ for l in of:
 of.close()
 
 pops = {}
-colors = ["r", "g", "b", "y", "m"]
+colors = ["r", "g", "b", "y", "m", "c"]
 
 f = open(fname)
 numIndivs = 0
@@ -56,7 +56,7 @@ for pi in range(len(cnt)):
     pos = cnt[pi]
     acu += pos
     plt.text(acu, 1.0, pops[pi], ha="right", va="bottom", rotation="vertical")
-    plt.axvline(acu, color="black", lw=0.1) 
+    plt.axvline(acu, color="black", lw=0.5) 
 
 plt.savefig("x.eps")
 

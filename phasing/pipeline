@@ -199,5 +199,3 @@ else {
     print STDERR "ERROR: Command $command is not known!";
     die;
 }
-
-print STDERR "Finished with $command!\n";

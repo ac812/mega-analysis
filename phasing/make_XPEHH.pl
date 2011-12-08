@@ -1,10 +1,7 @@
 #!/usr/perl/bin -w
 
-#YOU CAN COPY AND PASTE THE BLOCK BELOW MULTIPLE TIMES INTO THE SAME SCRIPT SO THAT IT WILL SEQUENTIALLY GENERATE ALL INPUT YOU'RE INTERESTED IN.
-#copy from here...
 
 my $chr=0;
-system "mkdir IHS_input";
 my $i;
 my $j;
 open (FILE, "<$ARGV[0]");
