@@ -1,0 +1,11 @@
+[System]
+phasingDir=/data6/tr353/usr/pipeline
+admixtureDir=/data6/tr353/usr/admixture
+scriptDir=/data6/tr353/usr/megascripts
+metaDir=/data6/tr353/usr/meta
+ibDir=/data6/tr353/usr/inbreeding
+[DB]
+hapmap=/data6/tr353/db/hapmap
+meta=/data6/tr353/db/meta
+geo=/data6/tr353/db/geo/pop_coordinates.tab
+plink=/data6/tr353/db/tartu/300511_x650_x610_x660

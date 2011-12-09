@@ -7,7 +7,7 @@ import rpy2.robjects as robjects
 from rpy2.robjects.vectors import DataFrame
 
 if len(sys.argv) != 3:
-    print "%s admixture.Q indlist"
+    print "%s admixture.Q famFile"
     sys.exit(-1)
 
 admix = sys.argv[1]
@@ -106,5 +106,6 @@ goodOrder = clusterAll(admix, myPop)
 
 internalReorder = []
 for pop in goodOrder:
+    print pop
     for indiv in popReorder[pop]:
         print str(indiv) + "\t" +  pop + "\t" + inds[indiv]
