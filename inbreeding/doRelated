@@ -74,7 +74,10 @@ elif OP == "statIBD":
             pihat = float(filter(lambda x: x!="", l.rstrip().split(" "))[9])
             vals.append(pihat)
         vals.sort()
-        print "%12s" % (pop,), "%.3f " % (sum(vals)/len(vals),), "%.3f " % (vals[len(vals)/2],), len(vals)
+        cut125 = len(filter(lambda x:x<0.125, vals))
+        cut15 = len(filter(lambda x:x<0.15, vals))
+        cut20 = len(filter(lambda x:x<0.2, vals))
+        print "%12s %.3f %.3f %3d %3d %3d %3d" % (pop, sum(vals)/len(vals), vals[len(vals)/2], len(vals), cut125, cut15, cut20)
         f.close()
 elif OP == "removeCloserIBD":
     for pop in pops:
