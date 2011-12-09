@@ -5,9 +5,14 @@ import sys
 import ConfigParser as config
 import MEGA
 
-if len(sys.argv) not in [1]:
-    print "Usage: %s" % (sys.argv[0].split("/")[-1],)
+if len(sys.argv) not in [1,2]:
+    print "Usage: %s grep" % (sys.argv[0].split("/")[-1],)
     sys.exit(-1)
+
+if len(sys.argv)==2:
+    grep = sys.argv[1]
+else:
+    grep = None
 
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
@@ -16,6 +21,8 @@ metaDB = cfg.get("DB","meta")
 pops = {}
 f = open(metaDB + os.sep + "clean.tab")
 for l in f:
+    if grep and l.find(grep)==-1:
+        continue
     rec = MEGA.getRecord(l)
     pops[rec["pop"]]=1
 f.close()

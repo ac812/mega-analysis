@@ -5,11 +5,13 @@ import sys
 def getRecord(l):
     #This is really a record from the meta database
     rec = {}
-    toks = l.rstrip().split("\t")
+    toks = l.split("\t") #rstrip will remove the empty end tabs
+    toks[-1]=toks[-1].rstrip() #remove just
     #To be extended
     rec["sampId"] = toks[0]
     rec["famId"] = toks[1]
     rec["pop"] = toks[2]
+    rec["source"] = toks[9]
     return rec
 
 def getPop4Indiv():

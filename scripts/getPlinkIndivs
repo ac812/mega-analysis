@@ -5,14 +5,16 @@ import sys
 import ConfigParser as config
 import MEGA
 
-if len(sys.argv) == 2 and sys.argv[1]=="--help":
-    print "Usage: %s [pop]" % (sys.argv[0].split("/")[-1],)
+if len(sys.argv) != 2:
+    print "Usage: %s <source>" % (sys.argv[0].split("/")[-1],)
+    print "Source is: Data source or Published or Unpublished or All"
+    print "stdin gets pops"
     sys.exit(-1)
 
-if len(sys.argv)>1:
-    pops = sys.argv[1:]
-else:
-    pops = None
+source = sys.argv[1]
+pops = []
+for l in sys.stdin:
+    pops.append(l.rstrip())
 
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
@@ -22,6 +24,9 @@ f = open(metaDB + os.sep + "clean.tab")
 for l in f:
     rec = MEGA.getRecord(l)
     if rec["pop"] == "": continue
+    mySrc = rec["source"]
+    if source=="Published" and mySrc=="Extended":
+        continue
     if not pops or rec["pop"] in pops:
         print "\t".join([rec["sampId"], rec["famId"], rec["pop"]])
 f.close()

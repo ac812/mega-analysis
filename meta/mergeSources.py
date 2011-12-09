@@ -13,33 +13,33 @@ tHdl = open(tartu)
 tHdl.readline() # header
 for l in tHdl:
     toks = l.rstrip().split("\t")[12:]
+    for i in range(len(toks), 23):
+        toks.append("")
     oldId      = toks[0]
     sampId     = toks[1]
     famId      = toks[2]
     pop        = toks[3]
-    try:
-        #Not used, but just to know positions...
-        region     = toks[4]
-        localAdmin = toks[5]
-        country    = toks[6]
-        continent  = toks[7]
-        lang       = toks[8]
-        source     = toks[9]
-        chip       = toks[10]
-        census     = toks[11]
-        mi         = toks[12]
-        height     = toks[13]
-        mtDNA      = toks[14]
-        HVS1       = toks[15]
-        YChro      = toks[16]
-        purity     = toks[17]
-        unrel      = toks[18]
-        adults     = toks[19]
-        r          = toks[20]
-        jew3       = toks[21]
-        rr         = toks[22]
-    except IndexError:
-        pass
+    region     = toks[4]
+    localAdmin = toks[5]
+    country    = toks[6]
+    continent  = toks[7]
+    lang       = toks[8]
+    if toks[9].find("This S")>-1:
+        toks[9]    = toks[9] + " Tartu"
+    source     = toks[9]
+    chip       = toks[10]
+    census     = toks[11]
+    mi         = toks[12]
+    height     = toks[13]
+    mtDNA      = toks[14]
+    HVS1       = toks[15]
+    YChro      = toks[16]
+    purity     = toks[17]
+    unrel      = toks[18]
+    adults     = toks[19]
+    r          = toks[20]
+    jew3       = toks[21]
+    rr         = toks[22]
     tRecs[(sampId,famId)] = [oldId] + toks[3:23]
     #print tRecs[(sampId,famId)]
 tHdl.close()
@@ -63,11 +63,12 @@ for l in eHdl:
     country    = toks[5]
     continent  = toks[6]
     lang       = toks[7]
-    source     = toks[8]
+    source     = "Extended"
     chip       = toks[9]
     refPop     = toks[10]
 
 
+    #Not used, but just to know positions...
     oldId      = ""
     census     = ""
     mi         = ""

@@ -1,6 +1,8 @@
 #!/usr/local/bin/python
 
 import os
+import re
+import shutil
 import sys
 import ConfigParser as config
 
@@ -23,6 +25,39 @@ os.system(
 def correct(myFile, wrong, right):
     os.system("perl -pi -e 's/%s/%s/g' %s" % (wrong, right, myFile))
 
+def addTabs(addTab):
+    tmpName = myFile + str(os.getpid())
+    shutil.copyfile(myFile, tmpName)
+    w = open(myFile, "w")
+    tmp = open(tmpName)
+    for l in tmp:
+        toks = l.rstrip().split("\t")
+        while len(toks)<24:
+            toks.append("")
+        w.write("\t".join(toks) + "\n")
+    w.close()
+    tmp.close()
+    os.remove(tmpName)
+
+def correctBarrier(myFile, posBarr, barr, posChange, newVal):
+    tmpName = myFile + str(os.getpid())
+    shutil.copyfile(myFile, tmpName)
+    w = open(myFile, "w")
+    tmp = open(tmpName)
+    myRe = re.compile(barr)
+    for l in tmp:
+        toks = l.split("\t")
+        toks[-1] = toks[-1].rstrip()
+        if myRe.match(toks[posBarr]):
+            toks[posChange] = newVal
+        w.write("\t".join(toks) + "\n")
+    w.close()
+    tmp.close()
+    os.remove(tmpName)
+
+addTabs(myFile)
+correctBarrier(myFile, 2, "Dolgan", 7, "Siberia")
+correct(myFile, "Dolgans", "Dolgan")
 correct(myFile, "Egyptans", "Egyptians")
 correct(myFile, "Ethipoia", "Ethiopia")
 correct(myFile, "North_Ossetians", "North Ossetians")
