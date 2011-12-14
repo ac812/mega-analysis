@@ -19,9 +19,27 @@ print                               # blank line, end of headers
 import MEGA
 from MEGA import web
 
-print "<title>MEGA browser</title>"
+form = cgi.FieldStorage()
+pop = form["p"].value
 
-print "<h1>MEGA browser</h1>"
+print "<title>%s</title>" % (pop,)
+print "<h1>%s</h1>" % (pop,)
+
+isBundle = pop in MEGA.bundles
+
+if isBundle:
+    print "<h2>Bundle</h2>"
+    for p in MEGA.bundles[pop]:
+        print web.getPopURL(p) + "\n<br>"
+else:
+    print "Core pop"
+    myBundles = []
+    for bundle in MEGA.bundles:
+        if pop in MEGA.bundles[bundle]:
+            myBundles.append(bundle)
+    if len(myBundles)>0:
+        print "I am in the following bundles: %s" %(", ".join(web.getPopsURLs(myBundles)))
+
 
 print "<h2>Studies</h2>"
 print """
