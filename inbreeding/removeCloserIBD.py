@@ -18,7 +18,7 @@ for l in f:
 f.close()
 
 def genKeepList(pop, lst):
-    fKeep = "ibdata/%s_keep.txt" % (pop,)
+    fKeep = "ibdata/%s_ibd.txt" % (pop,)
     f = open(fKeep, "w")
     for i in lst:
         f.write(" ".join(i))
@@ -38,9 +38,9 @@ for ind in allInds:
     currentInds[ind[0]] = [ind[1], ind[2]]
 
 while hasCloser:
-    os.system("nice -n19 plink --bfile ibdata/%s --keep ibdata/%s_keep.txt --noweb --out ibdata/%s_keep --make-bed >/dev/null" % (pop, pop, pop))
-    os.system("nice -n19 plink --bfile ibdata/%s_keep --genome --maf 0.01 --noweb --min %f --out ibdata/%s_keep > /dev/null" % (pop, cloThres, pop))
-    f = open("ibdata/%s_keep.genome" % (pop,))
+    os.system("nice -n19 plink --bfile ibdata/%s --keep ibdata/%s_ibd.txt --noweb --out ibdata/%s_ibd --make-bed >/dev/null" % (pop, pop, pop))
+    os.system("nice -n19 plink --bfile ibdata/%s_ibd --genome --maf 0.01 --noweb --min %f --out ibdata/%s_ibd > /dev/null" % (pop, cloThres, pop))
+    f = open("ibdata/%s_ibd.genome" % (pop,))
     f.readline() #header
     indClo = {}
     for cl in f:
