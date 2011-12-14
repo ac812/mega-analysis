@@ -10,3 +10,4 @@ hapmap=/data6/tr353/db/hapmap
 meta=/data6/tr353/db/meta
 geo=/data6/tr353/db/geo/pop_coordinates.tab
 plink=/data6/tr353/db/tartu/300511_x650_x610_x660
+cache=/data6/tr353/db/cache

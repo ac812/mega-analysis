@@ -38,6 +38,17 @@ def getPops():
         pops.add(rec["pop"])
     return list(pops)
 
+def getIndivs(pop):
+    f = open(metaDB + os.sep + "clean.tab")
+    indivs = []
+    for l in f:
+        rec = getRecord(l)
+        if rec["pop"] == pop:
+            indivs.append((rec["sampId"], rec["famId"]))
+    f.close()
+    return indivs
+
+
 def getBundles():
     b = open(metaDB + os.sep + "bundles")
     bundles = {}
@@ -69,6 +80,7 @@ cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
 metaDB = cfg.get("DB","meta")
 plinkDB = cfg.get("DB","plink")
+cacheDB = cfg.get("DB","cache")
 del cfg
 bundles = getBundles()
 studies = getStudies()

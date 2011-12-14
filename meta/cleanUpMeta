@@ -25,7 +25,7 @@ os.system(
 def correct(myFile, wrong, right):
     os.system("perl -pi -e 's/%s/%s/g' %s" % (wrong, right, myFile))
 
-def addTabs(addTab):
+def addTabs(myFile):
     tmpName = myFile + str(os.getpid())
     shutil.copyfile(myFile, tmpName)
     w = open(myFile, "w")
@@ -34,6 +34,20 @@ def addTabs(addTab):
         toks = l.rstrip().split("\t")
         while len(toks)<24:
             toks.append("")
+        w.write("\t".join(toks) + "\n")
+    w.close()
+    tmp.close()
+    os.remove(tmpName)
+
+def cleanWhiteSpace(myFile):
+    tmpName = myFile + str(os.getpid())
+    shutil.copyfile(myFile, tmpName)
+    w = open(myFile, "w")
+    tmp = open(tmpName)
+    for l in tmp:
+        toks = l.rstrip().split("\t")
+        for i in range(len(toks)):
+            toks[i] = toks[i].lstrip().rstrip()
         w.write("\t".join(toks) + "\n")
     w.close()
     tmp.close()
@@ -55,6 +69,7 @@ def correctBarrier(myFile, posBarr, barr, posChange, newVal):
     tmp.close()
     os.remove(tmpName)
 
+cleanWhiteSpace(myFile)
 addTabs(myFile)
 correctBarrier(myFile, 2, "Dolgan", 7, "Siberia")
 correct(myFile, "Dolgans", "Dolgan")
