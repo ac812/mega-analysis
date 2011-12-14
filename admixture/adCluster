@@ -106,6 +106,5 @@ goodOrder = clusterAll(admix, myPop)
 
 internalReorder = []
 for pop in goodOrder:
-    print pop
     for indiv in popReorder[pop]:
         print str(indiv) + "\t" +  pop + "\t" + inds[indiv]
