@@ -4,6 +4,7 @@ admixtureDir=/data6/tr353/usr/admixture
 scriptDir=/data6/tr353/usr/megascripts
 metaDir=/data6/tr353/usr/meta
 ibDir=/data6/tr353/usr/inbreeding
+pythonInclude=/home/tiagoantao/mega-analysis/support/python
 [DB]
 hapmap=/data6/tr353/db/hapmap
 meta=/data6/tr353/db/meta
