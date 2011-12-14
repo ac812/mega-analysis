@@ -30,8 +30,47 @@ def loadLocal(lcfg):
     MEGA.allInds = cfg.get("Data","allInds")
     MEGA.ibd = cfg.get("Data","ibd")
 
+def getPops():
+    f = open(metaDB + os.sep + "clean.tab")
+    pops = set()
+    for l in f:
+        rec = getRecord(l)
+        pops.add(rec["pop"])
+    return list(pops)
+
+def getBundles():
+    b = open(metaDB + os.sep + "bundles")
+    bundles = {}
+    for l in b:
+        toks = l.rstrip().split("\t")
+        bundles[toks[0]] = toks[1:]
+    b.close()
+    return bundles
+
+def getStudies():
+    s = open(metaDB + os.sep + "studies")
+    studies = {}
+    for l in s:
+        toks = l.rstrip().split("\t")
+        study = [], []
+        studies[toks[0]] = study
+        for tok in toks[1:]:
+            rec = tok.split("/") #out
+            if len(rec)==2: #out
+                study[1].append(rec[0])
+            else:
+                study[0].append(rec[0])
+
+    s.close()
+    return studies
+
+
 cfg = config.ConfigParser()
 cfg.read(os.path.expanduser("~/.megacfg"))
 metaDB = cfg.get("DB","meta")
 plinkDB = cfg.get("DB","plink")
 del cfg
+bundles = getBundles()
+studies = getStudies()
+pops    = getPops()
+pops.sort()
