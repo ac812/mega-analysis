@@ -17,6 +17,8 @@ scripts    - Standalone scripts
 
 support    - Miscelaneous support code
 
+web        - Web software
+
 
 CONFIGURATION
 
