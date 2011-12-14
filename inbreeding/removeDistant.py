@@ -36,7 +36,7 @@ for ind in allInds:
     currentInds[ind[0]] = [ind[1], ind[2]]
 
 os.system("nice -n19 plink --bfile ibdata/%s --keep ibdata/%s_remove.txt --noweb --out ibdata/%s_remove --make-bed >/dev/null" % (pop, pop, pop))
-os.system("nice -n19 plink --bfile ibdata/%s_remove --genome --noweb --min %f --out ibdata/%s_remove> /dev/null" % (pop, 0.0, pop))
+os.system("nice -n19 plink --bfile ibdata/%s_remove --genome --maf 0.01 --noweb --min %f --out ibdata/%s_remove> /dev/null" % (pop, 0.0, pop))
 f = open("ibdata/%s_remove.genome" % (pop,))
 f.readline() #header
 indClo = {}

@@ -39,7 +39,7 @@ for ind in allInds:
 
 while hasCloser:
     os.system("nice -n19 plink --bfile ibdata/%s --keep ibdata/%s_keep.txt --noweb --out ibdata/%s_keep --make-bed >/dev/null" % (pop, pop, pop))
-    os.system("nice -n19 plink --bfile ibdata/%s_keep --genome --noweb --min %f --out ibdata/%s_keep > /dev/null" % (pop, cloThres, pop))
+    os.system("nice -n19 plink --bfile ibdata/%s_keep --genome --maf 0.01 --noweb --min %f --out ibdata/%s_keep > /dev/null" % (pop, cloThres, pop))
     f = open("ibdata/%s_keep.genome" % (pop,))
     f.readline() #header
     indClo = {}

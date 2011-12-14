@@ -8,7 +8,7 @@ import Executor
 if len(sys.argv) not in[2,3]:
     #print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
     print "Usage: %s OP [cloThres]" % (sys.argv[0].split("/")[-1],)
-    print "OP is split, IBS, IBD, statIBD, removeCloserIBD, removeDistant"
+    print "OP is split, IBS, freq, IBD, statIBD, removeCloserIBD, removeDistant"
     sys.exit(-1)
 
 OP = sys.argv[1]
@@ -49,20 +49,22 @@ if OP == "split":
             f.write(" " + pop)
             f.write("\n")
         f.close()
-        #os.system("nice -n19 plink --bfile %s --keep %s --noweb --out ibdata/%s --make-bed &" % (plinkDB, fName, pop_))
         lexec.submit("plink", "--bfile %s --keep %s --noweb --out ibdata/%s --make-bed " % (plinkDB, fName, pop_))
     lexec.wait(True)
 elif OP == "IBS":
     for pop in pops:
         pop = pop.replace(" ","_")
-        #os.system("nice -n19 plink --bfile ibdata/%s --cluster --neighbour 1 5 --noweb --out ibdata/%s &" % (pop, pop))
         lexec.submit("plink", "--bfile ibdata/%s --cluster --neighbour 1 5 --noweb --out ibdata/%s" % (pop, pop))
     lexec.wait(True)
 elif OP == "IBD":
     for pop in pops:
         pop = pop.replace(" ","_")
-        #os.system("nice -n19 plink --bfile ibdata/%s --genome --noweb --min %f --out ibdata/%s &" % (pop, cloThres, pop))
-        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --out ibdata/%s" % (pop, cloThres, pop))
+        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --maf 0.001 --out ibdata/%s" % (pop, cloThres, pop))
+    lexec.wait(True)
+elif OP == "freq":
+    for pop in pops:
+        pop = pop.replace(" ","_")
+        lexec.submit("plink", "--bfile ibdata/%s --freq --noweb --out ibdata/%s" % (pop, pop))
     lexec.wait(True)
 elif OP == "statIBD":
     for pop in pops:
