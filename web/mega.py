@@ -51,7 +51,7 @@ print """
 """
 for bundle in MEGA.bundles:
     pops = MEGA.bundles[bundle]
-    print "<tr><td>%s</td><td>%s</td></tr>" % (bundle, ", ".join(pops))
+    print "<tr><td>%s</td><td>%s</td></tr>" % (web.getPopURL(bundle), ", ".join(web.getPopsURLs(pops)))
 print "</table>"
 
 
