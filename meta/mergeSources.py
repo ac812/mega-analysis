@@ -50,13 +50,15 @@ print >>sys.stderr, "\t".join(["sampId", "famId", "pop", "refPop", "region", "lo
     "YChro", "purity", "unrel", "adults", "r", "jew3", "rr", "oldId"])
 
 
-
+done = set()
 eHdl = open(extended)
 eHdl.readline()
 for l in eHdl:
     toks = l.rstrip().split("\t")[2:]
     sampId     = toks[0]
     famId      = toks[1]
+    if (sampId, famId) in done: continue
+    done.add((sampId, famId))
     pop        = toks[2]
     region     = toks[3]
     localAdmin = toks[4]

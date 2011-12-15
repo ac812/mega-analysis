@@ -9,6 +9,7 @@ if len(sys.argv) not in[2,3]:
     #print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
     print "Usage: %s OP [cloThres]" % (sys.argv[0].split("/")[-1],)
     print "OP is split, IBS, freq, IBD, statIBD, removeCloserIBD, removeDistant"
+    print "plink indivs file on stdin"
     sys.exit(-1)
 
 OP = sys.argv[1]
@@ -59,7 +60,7 @@ elif OP == "IBS":
 elif OP == "IBD":
     for pop in pops:
         pop = pop.replace(" ","_")
-        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --maf 0.001 --out ibdata/%s" % (pop, cloThres, pop))
+        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --maf 0.01 --out ibdata/%s" % (pop, cloThres, pop))
     lexec.wait(True)
 elif OP == "freq":
     for pop in pops:
