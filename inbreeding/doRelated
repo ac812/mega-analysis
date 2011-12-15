@@ -4,6 +4,7 @@ import os
 import sys
 import ConfigParser as config
 import Executor
+import MEGA
 
 if len(sys.argv) not in[2,3]:
     #print "Usage: %s OP" % (sys.argv[0].split("/")[-1],)
@@ -60,8 +61,30 @@ elif OP == "IBS":
 elif OP == "IBD":
     for pop in pops:
         pop = pop.replace(" ","_")
-        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --min %f --maf 0.01 --out ibdata/%s" % (pop, cloThres, pop))
+        lexec.submit("plink", "--bfile ibdata/%s --genome --noweb --maf 0.01 --out ibdata/%s" % (pop, pop))
     lexec.wait(True)
+    for pop in pops:
+        try:
+            f = open("ibdata/%s.genome" % (pop.replace(" ","_"),))
+            f.readline() #header
+            indClo = {}
+            for cl in f:
+                toks = filter(lambda x: x!="", cl.rstrip().split(" "))
+                for ind in [toks[0], toks[2]]:
+                    indClo.setdefault(ind, []).append(float(toks[6]))
+            f.close()
+            rems = set()
+            for ind in indClo:
+                lst = indClo[ind]
+                if sum(lst)==len(lst):
+                    rems.add(ind)
+            w=open("ibdata/%s.distant" %(pop.replace(" ","_"),), "w")
+            for rem in rems:
+                w.write(rem + "\n")
+            w.close()
+        except IOError:
+            print pop, "No data"
+            pass# No data
 elif OP == "freq":
     for pop in pops:
         pop = pop.replace(" ","_")
@@ -69,19 +92,35 @@ elif OP == "freq":
     lexec.wait(True)
 elif OP == "statIBD":
     for pop in pops:
+        nIndivs = len(MEGA.getIndivs(pop))
+        if nIndivs==1: continue
         pop = pop.replace(" ","_")
-        f = open("ibdata/%s.genome" % (pop))
+        try:
+            f = open("ibdata/%s.distant" % (pop))
+            nOuts = len(f.readlines())
+            f.close()
+        except IOError:
+            nOuts = 0
+        try:
+            f = open("ibdata/%s.genome" % (pop))
+        except IOError:
+            continue #Empty pop (or single indiv)
         f.readline()
         vals = []
         for l in f:
             pihat = float(filter(lambda x: x!="", l.rstrip().split(" "))[9])
             vals.append(pihat)
+        if len(vals)==0: continue #XXX Report database problem
         vals.sort()
         cut125 = len(filter(lambda x:x<0.125, vals))
         cut15 = len(filter(lambda x:x<0.15, vals))
         cut20 = len(filter(lambda x:x<0.2, vals))
-        print "%12s\t%.3f\t%.3f\t%3d\t%3d\t%3d\t%3d" % (pop, sum(vals)/len(vals), vals[len(vals)/2], len(vals), cut125, cut15, cut20)
+        print "%12s\t%3d\t%2d\t%.3f\t%.3f\t%3d\t%3d\t%3d\t%3d" %(
+                    pop, nIndivs, nOuts,
+                    sum(vals)/len(vals), vals[len(vals)/2], len(vals),
+                    cut125, cut15, cut20)
         f.close()
+        #XXX outgroup
 elif OP == "removeCloserIBD":
     for pop in pops:
         print pop
@@ -91,6 +130,7 @@ elif OP == "removeCloserIBD":
 elif OP == "removeDistant":
     for pop in pops:
         print pop
-        lexec.submit("python", "%s/removeDistant.py %s " % (scriptDir, pop.replace(" ", "_"),))
+        #XXX TO be done
+        #lexec.submit("python", "%s/removeDistant.py %s " % (scriptDir, pop.replace(" ", "_"),))
     lexec.wait(True)
 
